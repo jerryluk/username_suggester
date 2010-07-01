@@ -6,6 +6,9 @@ using RLIKE for those DB does not support it. (although it will be slower)
 
 ==Usage
 
+In your environment.rb, add:
+  config.gem 'username_suggester'
+
 Assume you have an User model with attributes :username, :firstname, :lastname
 
   class User < ActiveRecord::Base
