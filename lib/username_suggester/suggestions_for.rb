@@ -26,11 +26,11 @@ module UsernameSuggester
         num_suggestions = options[:num_suggestions] || 10
         
         send :define_method, "#{attribute}_suggestions".to_sym do
-          suggester = Suggester.new(read_attribute(first_name_attribute), read_attribute(last_name_attribute), options)
+          suggester = Suggester.new(send(first_name_attribute), send(last_name_attribute), options)
           name_combinations_with_regex = suggester.name_combinations.map { |s| "^#{s}[0-9]*$" }
           sql_conditions = Array.new(name_combinations_with_regex.size, "#{attribute} RLIKE ?").join(" OR ")
           unavailable_choices = self.class.all(:select => attribute, 
-            :conditions => [sql_conditions].concat(name_combinations_with_regex)).map{ |c| c.read_attribute(attribute) }
+            :conditions => [sql_conditions].concat(name_combinations_with_regex)).map{ |c| c.send(attribute) }
           suggester.suggest(num_suggestions, unavailable_choices)
         end
       end
