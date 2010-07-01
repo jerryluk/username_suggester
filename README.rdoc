@@ -24,7 +24,7 @@ And now you can call the suggestion function like the following:
   user = User.new(:firstname => "Jerry", :lastname => "Luk")
   user.username_suggestions
   
-You can also filter the suggestions, let's say you want the username contains at least 4 characters:
+You can also filter the suggestions, let's say you want the username to contain at least 4 characters:
 
   suggestions_for :username, :num_suggestions => 10,
     :validate => Proc.new { |username| username.length >= 4 }

@@ -42,7 +42,7 @@ module UsernameSuggester
       while results.size < max_num_suggestion and !candidates.blank?
         candidate = candidates.shift
         if @options[:validate] and !@options[:validate].call(candidate)
-          # Do nothing
+          # Don't add the candidate to result
         elsif unavailable_set.include? candidate
           candidates << find_extended_candidate(candidate, unavailable_set)
         else
@@ -56,7 +56,7 @@ module UsernameSuggester
     # Generates a candidate with "candidate<number>" which is not included in unavailable_set
     def find_extended_candidate(candidate, unavailable_set)
       i = 1
-      i+=1 while unavailable_set.include? "#{candidate}#{i}"
+      i+=rand(10) while unavailable_set.include? "#{candidate}#{i}"
       "#{candidate}#{i}"
     end
   end

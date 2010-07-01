@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/spec_helper'
 
-describe UsernameSuggester::Suggester do
+describe UsernameSuggester::Suggester do  
   describe "name combinations" do
     it "returns combinations of first name and last name" do
       UsernameSuggester::Suggester.new("Jerry", "Luk").name_combinations.should == [
@@ -44,6 +44,7 @@ describe UsernameSuggester::Suggester do
     end
     
     it "returns extended suggestions for names that are in the unavailable suggestions" do
+      UsernameSuggester::Suggester.send(:define_method, :rand) { 1 }
       @suggester.suggest(10, ["jerry"]).should include "jerry1"
       @suggester.suggest(10, ["jerry", "jerry1"]).should include "jerry2"
       @suggester.suggest(10, ["jerry", "jerry1031"]).should include "jerry1"

@@ -17,6 +17,8 @@ describe UsernameSuggester::UsernameSuggestions do
   end
   
   it "should able to suggest usernames that are not taken" do
+    UsernameSuggester::Suggester.send(:define_method, :rand) { 1 }
+    
     User.create!(:username => "jerry")
     1.upto(10) do |i|
       User.create!(:username => "jerry#{i}")
