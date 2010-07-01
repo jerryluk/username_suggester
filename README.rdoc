@@ -1,0 +1,30 @@
+= UsernameSuggester
+
+It generates username suggestions for users. 
+It works with MySQL and any DB that supports "RLIKE". If enough people request, I will add the support for not
+using RLIKE for those DB does not support it. (although it will be slower)
+
+==Usage
+
+Assume you have an User model with attributes :username, :firstname, :lastname
+
+  class User < ActiveRecord::Base
+    suggestions_for :username, :num_suggestions => 5,
+      :first_name_attribute => :firstname, :last_name_attribute => lastname
+    
+    ...
+    
+  end
+
+And now you can call the suggestion function like the following:
+
+  user = User.new(:firstname => "Jerry", :lastname => "Luk")
+  user.username_suggestions
+  
+You can also filter the suggestions, let's say you want the username contains at least 4 characters:
+
+  suggestions_for :username, :num_suggestions => 10,
+    :validate => Proc.new { |username| username.length >= 4 }
+
+
+Copyright (c) 2010 Presdo, released under the MIT license

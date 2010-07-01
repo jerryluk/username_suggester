@@ -1,0 +1,1 @@
+require 'username_suggester'
