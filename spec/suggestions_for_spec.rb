@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/spec_helper'
 
 class User < ActiveRecord::Base
   attr_accessible :first_name, :last_name, :username
-  suggestions_for :username
+  suggestions_for :username, :exclusion => ['luk']
 end
 
 describe UsernameSuggester::UsernameSuggestions do
@@ -28,4 +28,13 @@ describe UsernameSuggester::UsernameSuggestions do
     suggestions.should_not include "jerry"
     suggestions.should include "jerry11"
   end
+  
+  it "should not suggest usernames in the exclusion list" do
+    UsernameSuggester::Suggester.send(:define_method, :rand) { 1 }
+
+    suggestions = @user.username_suggestions
+    suggestions.should_not be_blank
+    suggestions.should_not include "luk"
+  end
+  
 end

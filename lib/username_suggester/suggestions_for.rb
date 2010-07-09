@@ -19,18 +19,20 @@ module UsernameSuggester
       # <tt>:last_name_attribute</tt>:: The attribute which stores the last name. Default is <tt>:last_name</tt>
       # <tt>:num_suggestions</tt>:: Maximum suggestions generated. Default is <tt>10</tt>
       # <tt>:validate</tt>: An Proc object which takes in an username and return true if this is an validate username
+      # <tt>:exclusion</tt>: An array of strings that should not be suggested
       #
       def suggestions_for(attribute = :username, options = {})        
         first_name_attribute = options[:first_name_attribute] || :first_name
         last_name_attribute = options[:last_name_attribute] || :last_name
         num_suggestions = options[:num_suggestions] || 10
+        exclusion = options[:exclusion] || []
         
         send :define_method, "#{attribute}_suggestions".to_sym do
           suggester = Suggester.new(send(first_name_attribute), send(last_name_attribute), options)
           name_combinations_with_regex = suggester.name_combinations.map { |s| "^#{s}[0-9]*$" }
           sql_conditions = Array.new(name_combinations_with_regex.size, "#{attribute} RLIKE ?").join(" OR ")
-          unavailable_choices = self.class.all(:select => attribute, 
-            :conditions => [sql_conditions].concat(name_combinations_with_regex)).map{ |c| c.send(attribute) }
+          unavailable_choices = exclusion.concat(self.class.all(:select => attribute, 
+            :conditions => [sql_conditions].concat(name_combinations_with_regex)).map{ |c| c.send(attribute) })
           suggester.suggest(num_suggestions, unavailable_choices)
         end
       end
