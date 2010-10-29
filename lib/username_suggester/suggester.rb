@@ -15,8 +15,8 @@ module UsernameSuggester
     #   be returned if involving the Proc with the suggestion returns true
     #
     def initialize(first_name, last_name, options = {})
-      @first_name = (first_name || "").downcase
-      @last_name = (last_name || "").downcase
+      @first_name = (first_name || "").downcase.gsub(/[^A-Za-z0-9_]/, '')
+      @last_name = (last_name || "").downcase.gsub(/[^A-Za-z0-9_]/, '')
       @options = options
     end
     

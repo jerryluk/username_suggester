@@ -32,6 +32,13 @@ describe UsernameSuggester::Suggester do
     it "returns empty array for blank first name and last name" do
       UsernameSuggester::Suggester.new("", "").name_combinations.should == []
     end
+    
+    it "should not contain space even there is a space in names" do
+      UsernameSuggester::Suggester.new("Ting Ting", "").name_combinations.should == [
+        "tingting",
+        "t"
+      ]
+    end
   end
   
   describe "name suggestions" do
