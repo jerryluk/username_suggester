@@ -30,14 +30,18 @@ module UsernameSuggester
         send :define_method, "#{attribute}_suggestions".to_sym do
           suggester = Suggester.new(send(first_name_attribute), send(last_name_attribute), options)
           name_combinations_with_regex = suggester.name_combinations.map { |s| "^#{s}[0-9]*$" }
+
           case
-            when defined? ActiveRecord::ConnectionAdapters::Mysql2Adapter
+            when (defined? ActiveRecord::ConnectionAdapters::Mysql2Adapter) &&
+                  (ActiveRecord::Base.connection.instance_of? ActiveRecord::ConnectionAdapters::Mysql2Adapter) then
               sql_conditions = Array.new(name_combinations_with_regex.size, "#{attribute} RLIKE ?").join(" OR ")
-            when defined? ActiveRecord::ConnectionAdapters::PostgreSQLAdapter
+            when (defined? ActiveRecord::ConnectionAdapters::PostgreSQLAdapter) &&
+                  (ActiveRecord::Base.connection.instance_of? ActiveRecord::ConnectionAdapters::PostgreSQLAdapter) then
               sql_conditions = Array.new(name_combinations_with_regex.size, "#{attribute} ~* ?").join(" OR ")
             else
               raise "username_suggester only supports Mysql and Postgres"
           end
+
           unavailable_choices = exclusion.concat(self.class.all(:select => attribute, 
             :conditions => [sql_conditions].concat(name_combinations_with_regex)).map{ |c| c.send(attribute) })
           suggester.suggest(num_suggestions, unavailable_choices)
