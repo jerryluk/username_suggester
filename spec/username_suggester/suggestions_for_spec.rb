@@ -1,11 +1,20 @@
-require File.dirname(__FILE__) + '/spec_helper'
+require "spec_helper"
 
-class User < ActiveRecord::Base
-  attr_accessible :first_name, :last_name, :username
-  suggestions_for :username, :exclusion => ['luk']
-end
+describe UsernameSuggester::SuggestionsFor do
 
-describe UsernameSuggester::UsernameSuggestions do
+  with_model :User do
+    # The table block works just like a migration.
+    table do |t|
+      t.string :first_name, :last_name, :username
+      t.timestamps
+    end
+
+    # The model block works just like the class definition.
+    model do
+      suggestions_for :username
+    end
+  end
+
   before(:each) do
     @user = User.new(:first_name => "Jerry", :last_name => "Luk")
   end

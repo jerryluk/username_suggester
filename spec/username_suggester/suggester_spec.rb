@@ -1,8 +1,8 @@
-require File.dirname(__FILE__) + '/spec_helper'
+require File.dirname(__FILE__) + '/../spec_helper'
 
 describe UsernameSuggester::Suggester do  
   describe "name combinations" do
-    it "returns combinations of first name and last name" do
+    it "returns default combinations of first name and last name" do
       UsernameSuggester::Suggester.new("Jerry", "Luk").name_combinations.should == [
         "jerry",
         "luk",

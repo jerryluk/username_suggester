@@ -1,55 +1,18 @@
 Gem::Specification.new do |s|
-  s.name = %q{username_suggester}
-  s.version = "0.2.3"
+  s.name                      = "username_suggester"
+  s.version                   = "0.2.3"
+  s.summary                   = "Generates username suggestions for users"
+  s.required_rubygems_version = ">= 1.3.6"
+  s.authors                   = ["jerryluk", "fillman"]
+  s.email                     = "jerry@presdo.com"
+  s.files                     = Dir["{lib,spec}/**/*", "[A-Z]*", "init.rb"] - ["Gemfile.lock"]
+  s.require_path              = "lib"
+  s.homepage                  = "http://github.com/jerryluk/username_suggester"
 
-  s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["jerryluk"]
-  s.date = %q{2010-10-29}
-  s.description = %q{Generates username suggestions for users}
-  s.email = %q{jerry@presdo.com}
-  s.extra_rdoc_files = [
-    "MIT-LICENSE",
-    "README.rdoc"
-  ]
-  s.files = [
-     ".gitignore",
-     "MIT-LICENSE",
-     "README.rdoc",
-     "Rakefile",
-     "username_suggester.gemspec",
-     "lib/username_suggester.rb",
-     "lib/username_suggester/suggester.rb",
-     "lib/username_suggester/suggestions_for.rb",
-     "spec/suggestions_for_spec.rb",
-     "spec/suggester_spec.rb",
-     "spec/spec_helper.rb",
-     "spec/db/database.yml",
-     "spec/db/schema.rb"
-  ]
-  s.homepage = %q{http://github.com/jerryluk/username_suggester}
-  s.rdoc_options = ["--charset=UTF-8"]
-  s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.6}
-  s.summary = %q{Generates username suggestions for users}
-  s.test_files = [
-    "spec/suggestions_for_spec.rb",
-    "spec/suggester_spec.rb",
-    "spec/spec_helper.rb",
-    "spec/db/database.yml",
-    "spec/db/schema.rb"
-  ]
-
-  if s.respond_to? :specification_version then
-    current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
-    s.specification_version = 3
-
-    if Gem::Version.new(Gem::RubyGemsVersion) >= Gem::Version.new('1.2.0') then
-      s.add_development_dependency(%q<rspec>, [">= 1.2.9"])
-    else
-      s.add_dependency(%q<rspec>, [">= 1.2.9"])
-    end
-  else
-    s.add_dependency(%q<rspec>, [">= 1.2.9"])
-  end
+  s.add_development_dependency 'with_model',   '~> 0.3'
+  s.add_development_dependency 'rspec',        '~> 2.11.0'
+  s.add_development_dependency 'activerecord', '~> 3.1'
+  s.add_development_dependency 'rake',         '~> 0.9'
+  s.add_development_dependency 'sqlite3',      '~> 1.3.6'
 end
 
