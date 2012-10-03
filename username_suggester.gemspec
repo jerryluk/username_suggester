@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name                      = "username_suggester"
-  s.version                   = "0.2.3"
+  s.version                   = "0.3.0"
   s.summary                   = "Generates username suggestions for users"
   s.required_rubygems_version = ">= 1.3.6"
   s.authors                   = ["jerryluk", "fillman"]
