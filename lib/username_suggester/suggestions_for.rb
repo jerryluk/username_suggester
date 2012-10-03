@@ -1,5 +1,5 @@
 module UsernameSuggester
-  module UsernameSuggestions
+  module SuggestionsFor
     def self.included(base)
       base.send :extend, ClassMethods
     end
@@ -19,34 +19,31 @@ module UsernameSuggester
       # <tt>:last_name_attribute</tt>:: The attribute which stores the last name. Default is <tt>:last_name</tt>
       # <tt>:num_suggestions</tt>:: Maximum suggestions generated. Default is <tt>10</tt>
       # <tt>:validate</tt>: An Proc object which takes in an username and return true if this is an validate username
-      # <tt>:exclusion</tt>: An array of strings that should not be suggested
+      # <tt>:exclude</tt>: An array of strings that should not be suggested
       #
-      def suggestions_for(attribute = :username, options = {})        
-        first_name_attribute = options[:first_name_attribute] || :first_name
-        last_name_attribute = options[:last_name_attribute] || :last_name
-        num_suggestions = options[:num_suggestions] || 10
-        exclusion = options[:exclusion] || []
+      def suggestions_for(attribute = :username, option_hash = {})
+        options = {
+          :first_name_attribute => :first_name,
+          :last_name_attribute  => :last_name,
+          :num_suggestions      => 5,
+          :exclude              => []
+        }.merge(option_hash)
         
-        send :define_method, "#{attribute}_suggestions".to_sym do
-          suggester = Suggester.new(send(first_name_attribute), send(last_name_attribute), options)
-          name_combinations_with_regex = suggester.name_combinations.map { |s| "^#{s}[0-9]*$" }
+        define_method "#{attribute}_suggestions" do
+          suggester = Suggester.new(send(options[:first_name_attribute]), send(options[:last_name_attribute]))
+          suggestions_to_search = suggester.name_combinations.map { |s| "#{s}%" }
 
-          case
-            when (defined? ActiveRecord::ConnectionAdapters::Mysql2Adapter) &&
-                  (ActiveRecord::Base.connection.instance_of? ActiveRecord::ConnectionAdapters::Mysql2Adapter) then
-              sql_conditions = Array.new(name_combinations_with_regex.size, "#{attribute} RLIKE ?").join(" OR ")
-            when (defined? ActiveRecord::ConnectionAdapters::PostgreSQLAdapter) &&
-                  (ActiveRecord::Base.connection.instance_of? ActiveRecord::ConnectionAdapters::PostgreSQLAdapter) then
-              sql_conditions = Array.new(name_combinations_with_regex.size, "#{attribute} ~* ?").join(" OR ")
-            else
-              raise "username_suggester only supports Mysql and Postgres"
-          end
+          t = self.class.arel_table
+          unavailable_choices = self.class.find_by_sql(t.project(t[attribute])
+                                  .where(t[attribute].matches_any(suggestions_to_search).and(t[:id].not_eq(self.id))).to_sql)
+                                    .map(&attribute).map(&:downcase).uniq
 
-          unavailable_choices = exclusion.concat(self.class.all(:select => attribute, 
-            :conditions => [sql_conditions].concat(name_combinations_with_regex)).map{ |c| c.send(attribute) })
-          suggester.suggest(num_suggestions, unavailable_choices)
+          options[:exclude] += unavailable_choices
+          suggester.suggest(options)
         end
       end
     end
   end
 end
+
+ActiveRecord::Base.send :include, UsernameSuggester::SuggestionsFor
