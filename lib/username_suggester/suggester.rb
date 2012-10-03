@@ -1,8 +1,9 @@
 module UsernameSuggester
   class Suggester
-    attr_reader :first_name, :last_name, :options
 
-    # Creates a Suggester class to suggest usernames
+    attr_reader :first_name, :last_name
+
+    # A Suggester class to suggest user_names
     #
     # ==== Parameters
     #
@@ -10,11 +11,11 @@ module UsernameSuggester
     # * <tt>:last_name</tt>   - Required.
     # * <tt>:options</tt>     - See UsernameSuggester::SuggestionsFor
     #
-    def initialize(first_name, last_name, options = {})
-      raise  Error, "first_name or last_name has not been specified" if first_name.nil? || last_name.nil?
+    def initialize(first_name, last_name)
+      raise Error, "first_name or last_name has not been specified" if first_name.nil? || last_name.nil?
+
       @first_name = first_name.downcase.gsub(/[^\w]/, '')
       @last_name  = last_name.downcase.gsub(/[^\w]/, '')
-      @options    = options
     end
     
     # Generates the combinations without the knowledge of what names are available
@@ -32,15 +33,19 @@ module UsernameSuggester
     end
     
     # Generates suggestions and making sure they are not in unavailable_suggestions
-    def suggest(unavailable_choices)
+    def suggest(options)
+      candidates_to_exclude = options[:exclude]
+      validation_block      = options[:validate]
+      number_of_suggestions = options[:num_suggestions]
+
       results    = []
       candidates = name_combinations.clone
-      while results.size < options[:num_suggestions] and !candidates.blank?
+      while results.size < number_of_suggestions && !candidates.blank?
         candidate = candidates.shift
-        if @options[:validate] and !@options[:validate].call(candidate)
+        if validation_block.try(:call, candidate)
           # Don't add the candidate to result
-        elsif unavailable_set.include? candidate
-          candidates << find_extended_candidate(candidate, unavailable_set)
+        elsif candidates_to_exclude.include? candidate
+          candidates << find_extended_candidate(candidate, candidates_to_exclude)
         else
           results << candidate
         end
@@ -50,10 +55,11 @@ module UsernameSuggester
     end
     
   private
+
     # Generates a candidate with "candidate<number>" which is not included in unavailable_set
-    def find_extended_candidate(candidate, unavailable_set)
+    def find_extended_candidate(candidate, candidates_to_exclude)
       i = 1
-      i+=rand(10) while unavailable_set.include? "#{candidate}#{i}"
+      i+=rand(10) while candidates_to_exclude.include? "#{candidate}#{i}"
       "#{candidate}#{i}"
     end
   end

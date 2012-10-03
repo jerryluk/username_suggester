@@ -2,48 +2,75 @@ require "spec_helper"
 
 describe UsernameSuggester::SuggestionsFor do
 
-  with_model :User do
-    # The table block works just like a migration.
-    table do |t|
-      t.string :first_name, :last_name, :username
-      t.timestamps
+  describe "default options given" do
+
+    with_model :User do
+      # User table migration
+      table do |t|
+        t.string :first_name, :last_name, :username
+        t.timestamps
+      end
+
+      # Lets test suggestions_for without any options
+      # By default there's nothing to exclude and number of suggestions equals 5
+      model do
+        suggestions_for :username
+      end
     end
 
-    # The model block works just like the class definition.
-    model do
-      suggestions_for :username
+    before(:each) do
+      @user = User.create(:first_name => "Jerry", :last_name => "Luk")
     end
+
+    it "should be able to suggest usernames" do
+      @user.username_suggestions.should eq(%w{jerry luk jluk jerryl jerryluk})
+    end
+
+    it "should suggest usernames that are not taken" do
+      # Ooops some user stolen our "jerry" username, so we'll not showing it in suggestions array
+      another_user = User.create(:first_name => "Robo", :last_name => "Cop", :username => "jerry")
+      @user.username_suggestions.should_not include("jerry")
+
+      # But is should include some alternative
+      @user.username_suggestions.should_not include("jerry1")
+    end
+
   end
 
-  before(:each) do
-    @user = User.new(:first_name => "Jerry", :last_name => "Luk")
-  end
-  
-  it "should able to suggest usernames" do
-    suggestions = @user.username_suggestions
-    suggestions.should_not be_blank
-    suggestions.should include "jerry"
-  end
-  
-  it "should able to suggest usernames that are not taken" do
-    UsernameSuggester::Suggester.send(:define_method, :rand) { 1 }
-    
-    User.create!(:username => "jerry")
-    1.upto(10) do |i|
-      User.create!(:username => "jerry#{i}")
-    end
-    suggestions = @user.username_suggestions
-    suggestions.should_not be_blank
-    suggestions.should_not include "jerry"
-    suggestions.should include "jerry11"
-  end
-  
-  it "should not suggest usernames in the exclusion list" do
-    UsernameSuggester::Suggester.send(:define_method, :rand) { 1 }
+  describe "complex options given" do
 
-    suggestions = @user.username_suggestions
-    suggestions.should_not be_blank
-    suggestions.should_not include "luk"
+    with_model :User do
+      # User table migration
+      table do |t|
+        t.string :first, :last, :login_name
+        t.timestamps
+      end
+
+      model do
+        suggestions_for :login_name, :first_name_attribute => :first,
+                                     :last_name_attribute  => :last,
+                                     :num_suggestions      => 3,
+                                     :exclude              => ["reserved"],
+                                     :validate             => proc { |s| s =~ /admin/ }
+      end
+    end
+
+    before(:each) do
+      @user = User.create(:first => "Reserved", :last => "Luk Admin")
+    end
+
+    it "should exclude 'reserved' from the list of suggestions" do
+      @user.login_name_suggestions.should_not include("reserved")
+      @user.login_name_suggestions.size.should eq(3)
+    end
+
+    it "should suggest usernames that are taken by me" do
+      # Even if I have already this username it should suggest me the same cuz it's mine
+      @user.login_name = "reservedl"
+      @user.save
+      @user.login_name_suggestions.should include("reservedl")
+    end
+
   end
   
 end

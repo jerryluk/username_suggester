@@ -21,22 +21,25 @@ module UsernameSuggester
       # <tt>:validate</tt>: An Proc object which takes in an username and return true if this is an validate username
       # <tt>:exclude</tt>: An array of strings that should not be suggested
       #
-      def suggestions_for(attribute = :username, options = {})
-        options[:first_name_attribute] ||= :first_name
-        options[:last_name_attribute]  ||= :last_name
-        options[:num_suggestions]      ||= 10
-        options[:exclude]              ||= []
+      def suggestions_for(attribute = :username, option_hash = {})
+        options = {
+          :first_name_attribute => :first_name,
+          :last_name_attribute  => :last_name,
+          :num_suggestions      => 5,
+          :exclude              => []
+        }.merge(option_hash)
         
         define_method "#{attribute}_suggestions" do
-          suggester = Suggester.new(send(options[:first_name_attribute]), send(options[:last_name_attribute]), options)
+          suggester = Suggester.new(send(options[:first_name_attribute]), send(options[:last_name_attribute]))
+          suggestions_to_search = suggester.name_combinations.map { |s| "#{s}%" }
 
           t = self.class.arel_table
-          unavailable_choices = options[:exclude] +
-                                self.class.find_by_sql(t.project(t[attribute])
-                                  .where(t[attribute].matches_any(suggester.name_combinations)).to_sql)
-                                    .map(&attribute)
+          unavailable_choices = self.class.find_by_sql(t.project(t[attribute])
+                                  .where(t[attribute].matches_any(suggestions_to_search).and(t[:id].not_eq(self.id))).to_sql)
+                                    .map(&attribute).map(&:downcase).uniq
 
-          suggester.suggest(unavailable_choices)
+          options[:exclude] += unavailable_choices
+          suggester.suggest(options)
         end
       end
     end
