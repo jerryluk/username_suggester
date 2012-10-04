@@ -1,3 +1,5 @@
+= TODO: Rewrite the readme at it's soooo old :(
+
 = UsernameSuggester
 
 It generates username suggestions for users. 
